@@ -17,10 +17,10 @@ Shortly is a backend REST API built using Java and Spring Boot that converts lon
 
 ## Tech Stack
 
-- **Language:** Java
+- **Language:** Java 25
 - **Framework:** Spring Boot
-- **Database:** MongoDB
-- **Database Integration:** Spring Data MongoDB
+- **Database:** PostgreSQL
+- **Database Integration:** Spring Data JPA / Hibernate
 - **API Documentation:** Swagger / OpenAPI
 - **Build Tool:** Maven
 - **Validation:** Jakarta Bean Validation
@@ -62,7 +62,7 @@ Make sure you have installed:
 
 - Java 25 or a compatible Java version
 - Maven
-- MongoDB
+- PostgreSQL
 - IntelliJ IDEA (recommended)
 
 ### 1. Clone the Repository
@@ -77,18 +77,39 @@ git clone https://github.com/YOUR_USERNAME/shortly.git
 cd shortly
 ```
 
-### 3. Configure MongoDB
+### 3. Configure PostgreSQL
 
-Make sure MongoDB is running locally.
+Make sure PostgreSQL is installed and running.
 
-The default database configuration in `application.properties` is:
+Create a database named `shortly`:
+
+```sql
+CREATE DATABASE shortly;
+```
+
+Configure your `src/main/resources/application.properties` file:
 
 ```properties
 spring.application.name=shortly
 server.port=8080
-spring.data.mongodb.uri=mongodb://localhost:27017/shortly_db
+
+# PostgreSQL Configuration
+spring.datasource.url=jdbc:postgresql://localhost:5432/shortly
+spring.datasource.username=postgres
+spring.datasource.password=YOUR_POSTGRES_PASSWORD
+
+# JPA / Hibernate Configuration
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+
+# Shortly Configuration
 shortly.base-url=http://localhost:8080
 ```
+
+Replace `YOUR_POSTGRES_PASSWORD` with your PostgreSQL password.
+
+Alternatively, configure database credentials using environment variables and reference them in the properties file.
 
 ### 4. Run the Application
 
@@ -206,7 +227,7 @@ Open the shortened URL directly in your browser:
 http://localhost:8080/GCNezOB
 ```
 
-The browser redirects to the original destination.
+The browser redirects to the original destination and increments the click count.
 
 ### 7. Delete a Shortened URL
 
@@ -224,8 +245,8 @@ Returns `204 No Content` when deletion succeeds.
 
 | Status Code | Description |
 |---|---|
-| 201 Created | URL shortened successfully |
 | 200 OK | URL details retrieved successfully |
+| 201 Created | URL shortened successfully |
 | 302 Found | Redirect to original URL |
 | 204 No Content | URL deleted successfully |
 | 400 Bad Request | Invalid request or validation failure |
@@ -245,15 +266,20 @@ Use it to explore and test the available REST API endpoints.
 
 ## Database
 
-MongoDB stores shortened URL records in the `urls` collection inside the `shortly_db` database.
+PostgreSQL stores shortened URL records in the `urls` table inside the `shortly` database.
+
+Hibernate maps the `Url` entity to the database table using Spring Data JPA.
 
 Each record contains:
 
+- Unique ID (UUID)
 - Original URL
 - Short code
 - Creation timestamp
 - Optional expiration timestamp
 - Click count
+
+The short code has a unique database constraint to prevent duplicate entries.
 
 ## Future Improvements
 

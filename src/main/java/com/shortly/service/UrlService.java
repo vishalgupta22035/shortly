@@ -1,3 +1,4 @@
+
 package com.shortly.service;
 
 import com.shortly.dto.ShortenUrlRequest;
@@ -6,10 +7,14 @@ import com.shortly.model.Url;
 import com.shortly.repository.UrlRepository;
 import com.shortly.exception.UrlExpiredException;
 import com.shortly.exception.CustomAliasAlreadyExistsException;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+
 import java.security.SecureRandom;
 import java.time.Instant;
 import java.util.NoSuchElementException;
@@ -33,6 +38,7 @@ public class UrlService {
         this.urlRepository = urlRepository;
     }
 
+    @Transactional
     public ShortenUrlResponse shortenUrl(ShortenUrlRequest request) {
 
         String shortCode;
@@ -91,6 +97,8 @@ public class UrlService {
 
         return shortCode;
     }
+
+    @Transactional
     public String getOriginalUrl(String shortCode) {
 
         Url url = urlRepository.findByShortCode(shortCode)
@@ -108,12 +116,16 @@ public class UrlService {
 
         return url.getOriginalUrl();
     }
+
+    @Transactional(readOnly = true)
     public Url getUrlDetails(String shortCode) {
 
         return urlRepository.findByShortCode(shortCode)
                 .orElseThrow(() ->
                         new NoSuchElementException("Short URL not found"));
     }
+
+    @Transactional
     public void deleteUrl(String shortCode) {
 
         Url url = urlRepository.findByShortCode(shortCode)
@@ -122,6 +134,8 @@ public class UrlService {
 
         urlRepository.delete(url);
     }
+
+    @Transactional(readOnly = true)
     public Page<Url> getAllUrls(Pageable pageable) {
         return urlRepository.findAll(pageable);
     }
